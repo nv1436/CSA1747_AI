@@ -1,31 +1,61 @@
-import itertools
+from collections import deque
 
-def tsp(cities):
+def bfs(start, goal, grid):
+    # Define movements (up, down, left, right)
+    movements = [(0, 1), (1, 0), (0, -1), (-1, 0)]
     
-    permutations = list(itertools.permutations(cities))
+    rows, cols = len(grid), len(grid[0])
     
-   
-    shortest_distance = float('inf')
-    shortest_route = None
-    for route in permutations:
-        total_distance = 0
-        for i in range(len(route) - 1):
-            total_distance += distance(route[i], route[i + 1])
-        total_distance += distance(route[-1], route[0])
+    # Initialize the queue with the start position and path
+    queue = deque([(start, [start])])
+    visited = set()
+    visited.add(start)
+    
+    while queue:
+        (current_pos, path) = queue.popleft()
         
-       
-        if total_distance < shortest_distance:
-            shortest_distance = total_distance
-            shortest_route = route
+        if current_pos == goal:
+            return path
+        
+        for move in movements:
+            new_row = current_pos[0] + move[0]
+            new_col = current_pos[1] + move[1]
+            new_pos = (new_row, new_col)
+            
+            if (0 <= new_row < rows and
+                0 <= new_col < cols and
+                grid[new_row][new_col] == 0 and
+                new_pos not in visited):
+                
+                visited.add(new_pos)
+                queue.append((new_pos, path + [new_pos]))
     
-    return shortest_route, shortest_distance
+    return None
 
-def distance(city1, city2):
+def print_grid(grid, path=None):
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
+            if path and (row, col) in path:
+                print('P', end=' ')
+            elif grid[row][col] == 1:
+                print('X', end=' ')
+            else:
+                print('.', end=' ')
+        print()
 
-    return ((city2[0] - city1[0]) ** 2 + (city2[1] - city1[1]) ** 2) ** 0.5
+# Example grid (0 = free space, 1 = obstacle)
+grid = [
+    [0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 0],
+    [0, 0, 0, 1, 0],
+    [0, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0]
+]
 
+start = (0, 0)
+goal = (4, 4)
 
-cities = [(0, 0), (1, 2), (3, 1), (4, 4), (2, 3)]
-shortest_route, shortest_distance = tsp(cities)
-print("Shortest route:", shortest_route)
-print("Shortest distance:", shortest_distance)
+path = bfs(start, goal, grid)
+print("Path found:")
+print_grid(grid, path)
+

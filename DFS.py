@@ -1,39 +1,59 @@
-from collections import deque
+def dfs_recursive(current_pos, goal, grid, path, visited):
+    # Define movements (up, down, left, right)
+    movements = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    
+    rows, cols = len(grid), len(grid[0])
+    
+    # Base cases
+    if current_pos == goal:
+        return path + [goal]
+    
+    visited.add(current_pos)
+    
+    for move in movements:
+        new_row = current_pos[0] + move[0]
+        new_col = current_pos[1] + move[1]
+        new_pos = (new_row, new_col)
+        
+        if (0 <= new_row < rows and
+            0 <= new_col < cols and
+            grid[new_row][new_col] == 0 and
+            new_pos not in visited):
+            
+            result = dfs_recursive(new_pos, goal, grid, path + [new_pos], visited)
+            if result:
+                return result
+    
+    return None
 
-class Graph:
-    def __init__(self):
-        self.graph = {}
+def dfs(start, goal, grid):
+    visited = set()
+    return dfs_recursive(start, goal, grid, [start], visited)
 
-    def add_edge(self, u, v):
-        if u not in self.graph:
-            self.graph[u] = []
-        if v not in self.graph:
-            self.graph[v] = []
+def print_grid(grid, path=None):
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
+            if path and (row, col) in path:
+                print('P', end=' ')
+            elif grid[row][col] == 1:
+                print('X', end=' ')
+            else:
+                print('.', end=' ')
+        print()
 
-        self.graph[u].append(v)
-        self.graph[v].append(u)
+# Example grid (0 = free space, 1 = obstacle)
+grid = [
+    [0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 0],
+    [0, 0, 0, 1, 0],
+    [0, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0]
+]
 
-    def bfs(self, start):
-        visited = set()
-        queue = deque([start])
+start = (0, 0)
+goal = (4, 4)
 
-        while queue:
-            vertex = queue.popleft()
-            if vertex not in visited:
-                print(vertex, end=' ')
-                visited.add(vertex)
-                queue.extend(neighbor for neighbor in self.graph[vertex] if neighbor not in visited)
+path = dfs(start, goal, grid)
+print("Path found:")
+print_grid(grid, path)
 
-if __name__ == "__main__":
-    # Example usage:
-    g = Graph()
-    g.add_edge(0, 1)
-    g.add_edge(0, 2)
-    g.add_edge(1, 2)
-    g.add_edge(2, 0)
-    g.add_edge(2, 3)
-    g.add_edge(3, 3)
-
-    start_vertex = 2
-    print(f"BFS starting from vertex {start_vertex}:")
-    g.bfs(start_vertex)
